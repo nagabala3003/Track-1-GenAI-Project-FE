@@ -1,6 +1,6 @@
 import axios from "axios";
 import type { ActionResult, ModePreference, ToneOption } from "./types";
-
+const API = import.meta.env.VITE_API_URL;
 interface ApiEnvelope {
   status?: string;
   data?: unknown;
@@ -623,7 +623,7 @@ function ensureOutput(value: string, fallbackValue: string): string {
 }
 
 async function runSummary(context: string, tone: ToneOption): Promise<ActionResult> {
-  const output = await postJson("/generate", { prompt: buildSummaryPrompt(context, tone) });
+  const output = await postJson(`${API}/generate`, { prompt: buildSummaryPrompt(context, tone) });
   return {
     output: ensureOutput(output, ""),
     mode: "summary",
@@ -633,7 +633,7 @@ async function runSummary(context: string, tone: ToneOption): Promise<ActionResu
 
 async function runQA(context: string, question: string, tone: ToneOption): Promise<ActionResult> {
   try {
-    const output = await postJson("/ask", { text: context, question });
+    const output = await postJson(`${API}/ask`, { text: context, question });
     return {
       output: ensureOutput(output, ""),
       mode: "qa",
@@ -642,7 +642,7 @@ async function runQA(context: string, question: string, tone: ToneOption): Promi
   } catch (askError) {
     console.error("Q&A /ask request failed", askError);
     try {
-      const output = await postJson("/generate", { prompt: buildQAPrompt(context, question, tone) });
+      const output = await postJson(`${API}/generate`, { prompt: buildQAPrompt(context, question, tone) });
       return {
         output: ensureOutput(output, ""),
         mode: "qa",
@@ -656,7 +656,7 @@ async function runQA(context: string, question: string, tone: ToneOption): Promi
 }
 
 async function runKeyPoints(context: string, question: string | undefined, tone: ToneOption): Promise<ActionResult> {
-  const output = await postJson("/generate", {
+  const output = await postJson(`${API}/generate`, {
     prompt: buildKeyPointsPrompt(context, question, tone),
   });
   return {
@@ -676,7 +676,7 @@ async function runDirectQuestion(question: string, tone: ToneOption): Promise<Ac
     `User request:\n${question}`,
   ].join("\n");
 
-  const output = await postJson("/generate", { prompt });
+  const output = await postJson(`${API}/generate`, { prompt });
   return {
     output: ensureOutput(output, ""),
     mode: "qa",
